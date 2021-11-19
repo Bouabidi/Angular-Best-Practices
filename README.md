@@ -91,7 +91,7 @@ edit package.json file start script to be
 relaunch the npm start
 
 ## Architectural principles
-# SOLID
--Single Responsibiliy:
+### SOLID
+#### Single Responsibiliy:
 A class should have only one reason to change.
 help to produce more loosely coupled and modular systems.
