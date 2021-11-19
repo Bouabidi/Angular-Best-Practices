@@ -11,7 +11,7 @@ Then add the command to script section of package.json
 
 "lint:ts":"eslint --color -c .eslintrc --ext .ts ."
 
-##Configure HTMLHint
+## Configure HTMLHint
 
 install htmlhint
 
@@ -29,7 +29,7 @@ run htmlhint on, for example, all the html files in your project.
 
 configure rules baesd on rules list of htmlhintrc
 
-##Configure stylelint
+## Configure stylelint
 
 install stylelint
 
@@ -45,3 +45,37 @@ run htmlhint
 
 "lint:scss": "npx stylelint \"src/**/*.scss\" --syntax scss",
 
+## Configure prettier
+
+configure .prettierrc
+
+## Configure proxy for API calls
+
+create a file proxy.config.json  next to package.json
+
+add the following content 
+
+{
+  "/folder/sub-folder/*": {
+    "target": "http://localhost:1100",
+    "secure": false,
+    "pathRewrite": {
+      "^/folder/sub-folder/": "/new-folder/"
+    },
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
+
+
+edit package.json file start script to be
+
+"start": "ng serve --proxy-config proxy.config.json"
+
+relaunch the npm start
+
+## Architectural principles
+# SOLID
+-Single Responsibiliy:
+A class should have only one reason to change.
+help to produce more loosely coupled and modular systems.
