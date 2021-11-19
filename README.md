@@ -177,9 +177,31 @@ export class FormGeneralComponent implements OnInit {
   }
 }
 ```
-
+````
 ### Best practices for a clean code
 #### trackBy
 When using ngFor to loop over an array in templates, use it with a trackBy function which will return an unique identifier for each item.
 
 When an array changes, Angular re-renders the whole DOM tree. But if you use trackBy, Angular will know which element has changed and will only make DOM changes for that particular element.
+
+````javascript 
+Before
+
+<li *ngFor="let item of items;">{{ item }}</li>
+
+After
+
+// in the template
+
+<li *ngFor="let item of items; trackBy: trackByFn">{{ item }}</li>
+
+// in the component
+
+trackByFn(index, item) {    
+   return item.id; // unique id corresponding to the item
+}
+```
+````
+##### const vs let
+
+
