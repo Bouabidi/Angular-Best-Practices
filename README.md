@@ -524,7 +524,6 @@ You should create something like a “common frame” for your application where
 
 ```javascript
 // src/app/shared/components/reusable/resuable.component
-...
 export class ReusableComponent implements OnInit {
   @Input() title: string;
   @Input() body: string;
@@ -558,4 +557,103 @@ export class SomeComponent implements OnInit {
 
 Quick tip! We’re able to control the HTML contents from the “parent” component by using the ng-content tag. Read more about content projection with ng-content.
 
-#### RxJs
+#### Using Interfaces
+If we want to create a contract for our class we should always use interfaces. By using them we can force the class to implement functions and properties declared inside the interface.
+Using interfaces is a perfect way of describing our object literals. If our object is of an interface type, it is obligated to implement all of the interface’s properties. We shouldn’t name our interfaces with the starting capital I letter as we do in some programming languages.
+````javascript
+export interface User {
+    name: string;
+    age: number;
+    address: string;
+} 
+```
+
+We can specify optional properties, by using the question mark (?) inside an interface as well. We don’t need to populate those properties inside an object:
+
+#### Using Immutability
+Objects and arrays are the reference types in javascript. If we want to copy them into another object or an array and to modify them, the best practice is to do that in an immutable way.
+By modifying reference types immutably, we are preserving the original objects and arrays and modifying only their copies.
+The easiest way to modify objects and arrays immutably is by using the es6 spread operator (…) :
+````javascript
+this.user = {
+  name: 'Dzon',
+  age: 25,
+  address: 'Sunny street 34'
+}
+let updatedUser = {
+  ...this.user,
+  name: 'Peter'
+}
+```
+We are deep copying the user object and then just overriding the name property.
+
+````javascript
+public results = [10, 12, 14];
+let newNumbers = [...this.numbers, 45, 56];
+```
+
+#### Safe Navigation Operator (?) in HTML Template
+
+To be on the safe side we should always use the safe navigation operator while accessing a property from an object in a component’s template. If the object is null and we try to access a property, we are going to get an exception. But if we use the save navigation (?) operator, the template will ignore the null value and will access the property once the object is not the null anymore.
+
+```javascript
+<div class="col-md-3">
+  {{user?.name}}
+</div>
+```
+
+#### Components, Decorators, Directives, and Lifecycle
+
+* Reusable Components and Decorators
+Creating reusable components is one of the best techniques we can use while developing our project. We can reuse those types of components inside any parent component and pass the data through the @Input decorator. Those components can emit events by using the @Output decorator and EventEmmiter class. Here is an example of the @Input and @Output decorators in action:
+
+```javascript 
+export class SuccessModalComponent implements OnInit {
+  @Input() public modalHeaderText: string;
+  @Input() public modalBodyText: string;
+  @Input() public okButtonText: string;
+  @Output() public redirectOnOK = new EventEmitter();
+  constructor() { }
+  ngOnInit() {
+  }
+  public emmitEvent(){
+    this.redirectOnOK.emit();
+  }
+```
+
+* Using Directives
+Whenever we have a situation where multiple HTML elements have the same behavior (for example: when we hover over the element it receives the blue color), we should consider using attribute directives. We shouldn’t repeat the hover logic every time we need it on some HTML element. A much better way would be to create a directive and then just reuse it on the particular element.
+
+```javascript
+import { Directive, ElementRef, HostListener, Input } from '@angular/core';
+@Directive({
+  selector: '[appHover]'
+})
+export class HoverDirective {
+  @Input() public hoverColor: string;
+  constructor(private element: ElementRef){}
+  @HostListener('mouseenter') onMouseEnter(){
+    this.highlightElement(this.hoverColor);
+  }
+  @HostListener('mouseleave') onMouseLeave(){
+    this.highlightElement(null);
+  }
+  private highlightElement(color: string){
+    this.element.nativeElement.style.backgroundColor = color;
+  }
+}
+```
+We need to register this directive in a required module and to call it in HTML template file:
+
+```javascript
+<p appHover [hoverColor]="'blue'">this is hoverable text</p>
+```
+
+#### Using Lifecycle Hooks
+Lifecycle hooks play a very important part of Angular development. We should use them whenever we have an opportunity to. For example, if we need to fetch some data from a database as soon as our component is instantiated, we should use ngOnInit() lifecycle hook and not the constructor.
+
+If we have some logic inside child components and we want to execute that logic as soon as decorator parameters are modified, we can use ngOnChanges() lifecycle hook.
+
+If we need to clean up some resources as soon as our component is destroyed, we should use ngOnDestroy() lifecycle hook.
+
+Even though we don’t have to implement interfaces to use the lifecycle hooks, we are better off implementing them.
