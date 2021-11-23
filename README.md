@@ -185,7 +185,7 @@ When using ngFor to loop over an array in templates, use it with a trackBy funct
 
 When an array changes, Angular re-renders the whole DOM tree. But if you use trackBy, Angular will know which element has changed and will only make DOM changes for that particular element.
 
-````javascript 
+```javascript 
 Before
 
 <li *ngFor="let item of items;">{{ item }}</li>
@@ -233,9 +233,7 @@ if (iHaveMoreThanOneCar) {
 if (youHaveMoreThanOneCar) {
    yourCar = `${youCar}s`;
 }
-
-
-````
+```
 #### pipeable operators
 Pipeable operators are tree-shakeable meaning only the code we need to execute will be included when they are imported.
 
