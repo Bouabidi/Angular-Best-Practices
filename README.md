@@ -567,7 +567,7 @@ export interface User {
     age: number;
     address: string;
 } 
-```
+````
 
 We can specify optional properties, by using the question mark (?) inside an interface as well. We don’t need to populate those properties inside an object:
 
