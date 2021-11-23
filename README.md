@@ -177,7 +177,7 @@ export class FormGeneralComponent implements OnInit {
   }
 }
 ```
-````
+
 ### Best practices for a clean code
 #### trackBy
 When using ngFor to loop over an array in templates, use it with a trackBy function which will return an unique identifier for each item.
@@ -201,7 +201,6 @@ trackByFn(index, item) {
    return item.id; // unique id corresponding to the item
 }
 ```
-````
 ##### const vs let
 ```javascript
 Before
@@ -324,7 +323,7 @@ public ngOnDestroy (): void {
     this._destroyed$.complete();
 }
 ```
-````
+
 #### Lazy load
 When possible, try to lazy load the modules in your Angular application. Lazy loading is when you load something only when it is used.
 This will reduce the size of the application to be loaded and can improve the application boot time by not loading the modules that are not used.
