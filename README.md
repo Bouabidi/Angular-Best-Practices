@@ -127,7 +127,8 @@ called for every change detection for example for mouse-move
 
 ### Angular Forms
 ## Basic Setup
-````javascript
+
+```javascript
 import {
   ChangeDetectionStrategy,
   Component,
@@ -176,7 +177,7 @@ export class FormGeneralComponent implements OnInit {
     this.form.getRawValue();
   }
 }
-```
+````
 
 ### Best practices for a clean code
 #### trackBy
@@ -234,7 +235,7 @@ if (youHaveMoreThanOneCar) {
 }
 
 
-```
+````
 #### pipeable operators
 Pipeable operators are tree-shakeable meaning only the code we need to execute will be included when they are imported.
 
@@ -322,7 +323,7 @@ public ngOnDestroy (): void {
     this._destroyed$.next();
     this._destroyed$.complete();
 }
-```
+````
 
 #### Lazy load
 When possible, try to lazy load the modules in your Angular application. Lazy loading is when you load something only when it is used.
@@ -367,6 +368,7 @@ export class LazyModule {}
 
 #### Avoid subscriptions inside subscriptions
 Avoid subscribing to one observable in the subscribe block of another observable. Instead, use appropriate chaining operators. Chaining operators run on observables from the operator before them. Some chaining operators are: withLatestFrom, combineLatest, etc.
+
 ```javascript
 Before
 
@@ -583,13 +585,13 @@ let updatedUser = {
   ...this.user,
   name: 'Peter'
 }
-```
+````
 We are deep copying the user object and then just overriding the name property.
 
 ````javascript
 public results = [10, 12, 14];
 let newNumbers = [...this.numbers, 45, 56];
-```
+````
 
 #### Safe Navigation Operator (?) in HTML Template
 
