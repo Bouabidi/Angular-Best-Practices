@@ -656,3 +656,320 @@ If we have some logic inside child components and we want to execute that logic 
 If we need to clean up some resources as soon as our component is destroyed, we should use ngOnDestroy() lifecycle hook.
 
 Even though we don’t have to implement interfaces to use the lifecycle hooks, we are better off implementing them.
+
+#### Consume REST API in Angular
+Most applications need to communicate with a remote server over the HTTP protocol, in order to perform the basic CRUD operations. With Angular, you can use HTTPClient service to achieve this communication easily. As an example, if you need to manage the Posts of your blog, you may have the following service to handle all the operations on the Post resource:
+```javascript
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PostService {
+  private readonly APIUrl = environment.APIUrl + 'posts';
+
+  constructor(private httpClient: HttpClient ) { }
+
+  getList(page: number, count: number): Observable<Post[]> {
+    let params = new HttpParams()
+			.set('page', page.toString())
+			.set('count', count.toString());
+
+    return this.httpClient.get<Post[]>(`/${this.APIUrl}}?${params.toString()}`)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  get(id: string | number): Observable<Post> {
+    return this.httpClient.get<Post>(`/${this.APIUrl}}/${id}`)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+  
+  add(post: Post): Observable<any> {
+    return this.httpClient.post(`/${this.APIUrl}}`, post)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  delete(id: string | number): Observable<any> {
+    return this.httpClient.delete(`/${this.APIUrl}}/${id}`) 
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  update(post: Post) {
+    return this.httpClient.put(`/${this.APIUrl}}`,post)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+  
+  private handleError(error: HttpErrorResponse) {
+    // Handle the HTTP error here
+    return throwError('Something wrong happened');
+  }
+}
+```
+This solution is simple and clean, and it even follows the best practices according to the official Angular Documentation. However, applications usually have many resources to manage, for our example, we may have users, comments, reviews, etc. Ideally, each of these resources should have a separate service to handle CRUD operations and communicate with the server, at the end we will have UserService, CommentService, ReviewService.Let’s take a look at how the
+```javascript
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class CommentService {
+  private readonly APIUrl = environment.APIUrl + 'comments';
+
+  constructor(private httpClient: HttpClient ) { }
+
+  getList(index: number, page: number): Observable<Comment[]> {
+    let params = new HttpParams()
+			.set('limit', index.toString())
+			.set('offset', page.toString());
+
+    return this.httpClient.get<Comment[]>(`/${this.APIUrl}}?${params.toString()}`)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  get(id: string | number): Observable<Comment> {
+    return this.httpClient.get<Comment>(`/${this.APIUrl}}/${id}`)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+  
+  add(comment: Comment): Observable<any> {
+    return this.httpClient.post(`/${this.APIUrl}}`, comment)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  delete(id: string | number): Observable<any> {
+    return this.httpClient.delete(`/${this.APIUrl}}/${id}`) 
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  update(comment: Comment) {
+    return this.httpClient.put(`/${this.APIUrl}}`,comment)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+  
+  private handleError(error: HttpErrorResponse) {
+    // Handle the HTTP error here
+    return throwError('Something wrong happened');
+  }
+}
+```
+* The Problem
+Although the above implementation is very common and widly acceptable, it sufferes from two cons:
+1. Code redundant (breaking of the DRY principle): If you compare the PostService and the CommentService you will notice how redundant the code is.
+2. Changes in the server-side, or changes in the way to communicate to the server, require changes in many files (in our case we need to change both PostService and CommentService files)
+
+* Typescript Generics To The Rescue
+To solve the above issues let’s go ahead and build the following abstract class which will be the base of all the other services:
+```javascript
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+@Injectable({
+  providedIn: 'root'
+})
+export abstract class ResourceService<T> {
+  private readonly APIUrl = environment.APIUrl + this.getResourceUrl();
+
+  constructor(protected httpClient: HttpClient ) {
+  }
+
+  abstract getResourceUrl(): string;
+
+   getList(page: number, count: number): Observable<T[]> {
+    let params = new HttpParams()
+			.set('page', page.toString())
+			.set('count', count.toString());
+
+    return this.httpClient.get<T[]>(`/${this.APIUrl}}?${params.toString()}`)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  get(id: string | number): Observable<T> {
+    return this.httpClient.get<T>(`/${this.APIUrl}}/${id}`)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+  
+  add(resource: T): Observable<any> {
+    return this.httpClient.post(`/${this.APIUrl}}`, resource)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  delete(id: string | number): Observable<any> {
+    return this.httpClient.delete(`/${this.APIUrl}}/${id}`) 
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  update(resource: T) {
+    return this.httpClient.put(`/${this.APIUrl}}`,resource)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+  
+  private handleError(error: HttpErrorResponse) {
+    // Handle the HTTP error here
+    return throwError('Something wrong happened');
+  }
+}
+```
+1. The new service class is abstract, which means it can’t be instantiated and used directly, but it needs to be extended by other classes.
+2. We provide one abstract method getResourceUrl, The class which extends this abstract class must implement this method, and return the URL of the resource as we will see in the following section.
+3. This is a Generic Class, it is not tied to a specific type, rather the class which extends this abstract class will define the exact type used.
+4. It has all the needed CRUD operations which we need and used before in the previous service.
+
+Now after we have our abstract generic class, whenever we need a new service we can simply extend this class and implement the only one abstract method getResourceUrl.
+
+* Server vs Front-end Model
+
+In most applications, the front-end model doesn’t match %100 the server-side model. In other words, the REST API will respond with json object that doesn’t match exactly the interface or the class defined in the front-end application. In this case, you need a mapping function to convert between server and front-side mode. This sometimes referred to as serializing/deserializing.
+
+So, let us extend our base class to provide this mapping functionality. To do so I updated the ResourceService to look as the following:
+```javascript
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+
+@Injectable({
+  providedIn: 'root'
+})
+export abstract class ResourceService<T> {
+  private readonly APIUrl = environment.APIUrl + this.getResourceUrl();
+
+  constructor(protected httpClient: HttpClient ) {
+  }
+
+  abstract getResourceUrl(): string;
+
+  toServerModel(entity: T): any {
+    return entity;
+  }
+
+  fromServerModel(json: any): T {
+    return json;
+  }
+
+  getList(index: number, page: number): Observable<T[]> {
+    let params = new HttpParams()
+			.set('limit', index.toString())
+			.set('offset', page.toString());
+
+    return this.httpClient.get<T[]>(`/${this.APIUrl}?${params.toString()}`)
+      .pipe(
+        map((list) => list.map((item)=> this.fromServerModel(item))),
+        catchError(this.handleError)
+      );
+  }
+
+  get(id: string | number): Observable<T> {
+    return this.httpClient.get<T>(`/${this.APIUrl}/${id}`)
+      .pipe(
+        map((json) => this.fromServerModel(json)),
+        catchError(this.handleError)
+      );
+  }
+  
+  add(resource: T): Observable<any> {
+    return this.httpClient.post(`/${this.APIUrl}`, this.toServerModel(resource))
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  delete(id: string | number): Observable<any> {
+    return this.httpClient.delete(`/${this.APIUrl}/${id}`) 
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  update(resource: T) {
+    return this.httpClient.put(`/${this.APIUrl}`, this.toServerModel(resource))
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+  
+  private handleError(error: HttpErrorResponse) {
+    // Handle the HTTP error here
+    return throwError('Something wrong happened');
+  }
+}
+
+```
+Now to consume the new changes we have two cases:
+1. There is no mapping needed between the server and the front-end model, in this case, we don’t have to change anything in the class that extends the resourceService.
+2. There is some kind of mapping needed between the server and the front-end model, all we need to do is to override toServerModel and fromServerModel models in the derived class to address our requirement mappings. For example let’s assume, that the PostsService implemented previously needs to map from timestamp to a js Date object, the PostsService implementation would look like the following:
+
+```javascript
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { ResourceService } from '../resource/resource.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class PostsService extends ResourceService<Post>{
+  
+  constructor(protected httpClient: HttpClient ) { 
+    super(httpClient);
+  }
+
+  getResourceUrl(): string {
+    return 'posts';
+  }
+
+  toServerModel(entity: Post): any {
+    return {
+      ...entity,
+      createDate: entity.createDate.getTime()
+    };
+  }
+
+  fromServerModel(json: any): Post{
+    return {
+      ...json,
+      createDate: new Date(json.createDate)
+    };
+  } 
+}
+```
