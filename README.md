@@ -556,6 +556,156 @@ export class SomeComponent implements OnInit {
 
 Quick tip! We’re able to control the HTML contents from the “parent” component by using the ng-content tag. Read more about content projection with ng-content.
 
+#### Communicating across Components: reusable components
+how to create reusable components in Angular. I’ll be making use of Angular’s @Input and @Output directives?
+
+##### @Input
+@Input decorator allows parent component to bind it's properties to child component and thus gives the child component access to its data. These bindings are actually a reference to properties on the parent component.
+
+Say we have two components CourseListComponent to the CourseItemComponent and we want to pass "course" information from our CourseListComponent to the CourseItemComponent.
+
+we have our course model
+```javascript
+export class Course {
+  public name: string;
+  public description: string;
+  public courseImagePath: string;
+
+  constructor(name: string, desc: string, courseImagePath: string) {
+    this.name = name;
+    this.description = desc;
+    this.courseImagePath = imagePath;
+  }
+}
+```
+our course-list component looks something like this:
+```javascript
+...
+export class CourseListComponent implements OnInit {
+  courses: Course[] = [
+    new Course('Angular Course 1', 'This is simply a practice Angular course 1', 'http://via.digital.com/350x150.jpeg'),
+    new Course('Angular Course 2', 'This is simply a practice Angular course 2', 'http://via.digital.com/350x150'),
+	new Course('Angular Course 3', 'This is simply a practice Angular course 3', 'http://via.digital.com/350x150')
+  ];
+
+  constructor() { }
+
+  ngOnInit() {
+  }
+}
+```
+Below is how we would update our course-list template:
+```javascript
+<div class="row">
+  <div class="col-xs-12">
+    <app-course-item
+      *ngFor="let courseEl of courses"
+      [course]="courseEl"></app-course-item>
+  </div>
+</div>
+```
+We pass the individual course element for that iteration to the CourseItemComponent. Thus, we are binding the "course" property of the child CourseItemComponent from the parent CourseListComponent.
+
+Now, to be able to do this, we have to use the @Input decorator on the child CourseItemComponent. Thus, our updated CourseItemComponent would look like below:
+```javascript
+export class CourseItemComponent implements OnInit {
+@Input() course: Course;  
+  constructor() { }
+  ngOnInit() {  }
+}
+```
+We can now render the course name/description/image in the CourseItemComponent template as below:
+```javascript
+<a
+  href="#"
+  class="list-group-item clearfix">
+  <div class="pull-left">
+    <h4 class="list-group-item-heading">{{ course.name }}</h4>
+    <p class="list-group-item-text">{{ course.description }}</p>
+  </div>
+  <span class="pull-right">
+        <img
+          [src]="course.courseImagePath"
+          alt="{{ course.name }}"
+          class="img-responsive"
+          style="max-height: 50px;">
+      </span>
+</a> 
+```
+##### Using @Output Decorator and EventEmitter (Event Binding)
+In certain cases, we want to be able to emit data back from the child component to the parent component. There is an EventEmitter property exposed by the Child component exposes, which would emit data whenever any action/event occurs on the child component.
+
+So, we'll have a "click" event on the CourseItemComponent. This is how the template for that would be updated to:
+
+```javascript
+<a
+  href="#"
+  class="list-group-item clearfix"
+	(click)="onSelected()">
+  <div class="pull-left">
+    <h4 class="list-group-item-heading">{{ course.name }}</h4>
+    <p class="list-group-item-text">{{ course.description }}</p>
+  </div>
+  <span class="pull-right">
+        <img
+          [src]="course.courseImagePath"
+          alt="{{ course.name }}"
+          class="img-responsive"
+          style="max-height: 50px;">
+      </span>
+</a>
+```
+Now, from our CourseItemComponent typescript code, we want to be able to emit this event and inform the parent component about the event. If we want "courseSelected" to be listenable from outside, we have to use the @Output decorator. This would give access to emit() method on this property. 
+
+```javascript
+export class CourseItemComponent implements OnInit {
+@Input() course: Course;  
+@Output() courseSelected = new EventEmitter<Course>();
+  constructor() { }
+  ngOnInit() {  }
+onSelected() {
+    this.courseSelected.emit(this.course);
+  }
+}
+```
+We would now be able to listen to the "courseSelected" event on the parent CourseListComponent as shown below.
+
+```javascript
+<div class="row">
+  <div class="col-xs-12">
+    <button class="btn btn-success">New Course</button>
+  </div>
+</div>
+<hr>
+<div class="row">
+  <div class="col-xs-12">
+    <app-course-item
+      *ngFor="let courseEl of courses"
+      [course]="courseEl"
+      (courseSelected)="onCourseSelected(courseEl)"></app-course-item>
+  </div>
+</div>
+```
+Also, we'll now get access to the "course" in our CourseListComponent typescript code.
+
+```javascript
+export class CourseListComponent implements OnInit {
+  courses: Course[] = [
+    new Course('Angular Course 1', 'This is simply a practice Angular course 1', 'http://via.digital.com/350x150.jpeg'),
+    new Course('Angular Course 2', 'This is simply a practice Angular course 2', 'http://via.digital.com/350x150')
+  ];
+
+  constructor() { }
+
+  ngOnInit() {
+  }
+
+onCourseSelected(course: Course) {
+   // console.log("Selected course : " + course);
+  }
+}
+```
+
 #### Using Interfaces
 If we want to create a contract for our class we should always use interfaces. By using them we can force the class to implement functions and properties declared inside the interface.
 Using interfaces is a perfect way of describing our object literals. If our object is of an interface type, it is obligated to implement all of the interface’s properties. We shouldn’t name our interfaces with the starting capital I letter as we do in some programming languages.
