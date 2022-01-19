@@ -807,6 +807,42 @@ If we need to clean up some resources as soon as our component is destroyed, we 
 
 Even though we don’t have to implement interfaces to use the lifecycle hooks, we are better off implementing them.
 
+#### Path Alias
+Path aliases simplify paths by giving a link to the path rather than using the the full relative path.
+```javascript
+// before:
+import { SharedModule } from '../../shared/shared.module';
+import { DatePipe } from '../../../date.pipe';
+import { environment } from '../../../environments/environment';
+ 
+// after:
+import { SharedModule } from '@shared/shared.module';
+import { DatePipe } from '@shared/pipes/date.pipe';
+import { environment } from '@env/environment';
+```
+We add some change to tsconfig.json
+```javascript
+{
+  "compilerOptions": {
+    ...,  
+    "baseUrl": "./",
+    "paths": {
+      "@app/*": [
+        "src/app/*"
+      ],
+      "@core/*": [
+        "src/app/core/*"
+      ],
+      "@shared/*": [
+        "src/app/shared/*"
+      ],
+      "@env/*": [
+        "src/environments/*"
+      ]
+    }
+  }
+}
+```
 #### Consume REST API in Angular
 Most applications need to communicate with a remote server over the HTTP protocol, in order to perform the basic CRUD operations. With Angular, you can use HTTPClient service to achieve this communication easily. As an example, if you need to manage the Posts of your blog, you may have the following service to handle all the operations on the Post resource:
 ```javascript
