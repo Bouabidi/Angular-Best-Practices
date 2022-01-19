@@ -1159,3 +1159,123 @@ export class PostsService extends ResourceService<Post>{
   } 
 }
 ```
+## Containerizing Angular using Docker
+### Creating Docker file
+Then create a new file called Dockerfile that will be located in the project’s root folder. It should have these following lines:
+```javascript
+### STAGE 1: Build ###
+FROM node:12.20-alpine3.10 AS build
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm install
+COPY . .
+RUN npm run build:prod
+
+### STAGE 2: Run ###
+FROM nginx:1.17.1-alpine
+COPY --from=build /app/dist/ngx-levi9 /usr/share/nginx/html
+```
+#### STAGE 1: Build
+```javascript
+FROM node:12.20-alpine3.10 As build
+```
+This line will tell the docker to pull the node image with tag 12.20-alpine3.10 if the images don't exist. We are also giving a friendly name build to this image so we can refer it later.
+```javascript
+WORKDIR /app
+```
+This WORKDIR command will create the working directory in our docker image. going forward any command will be run in the context of this directory.
+```javascript
+COPY package.json package-lock.json ./
+```
+This COPY command will copy package.json and package-lock.json from our current directory to the root of our working directory inside a container which is /app.
+```javascript
+RUN npm install
+```
+This RUN command will restore node_modules define in our package.json
+
+```javascript
+COPY . .
+```
+This COPY command copies all the files from our current directory to the container working directory. this will copy all our source files.
+```javascript
+RUN npm run build:prod
+```
+This command will build our angular project in production mode and create production ready files in dist/appName folder
+#### STAGE 2: Run
+```javascript
+FROM nginx:1.17.1-alpine
+```
+This line will create a second stage nginx container where we will copy the compiled output from our build stage
+```
+COPY --from=build /app/dist/ngx-levi9 /usr/share/nginx/html
+```
+This is the final command of our docker file. This will copy the compiled angular app from builder stage path /app/dist/ngx-levi9 to nginx container
+
+### Creating docker ignore file
+When COPY . . command execute it will copy all the files in the host directory to the container working directory. if we want to ignore some folder like .git or node_modules we can define these folders in .dockerignore file.
+```
+.git
+node_modules
+```
+### Building a docker image
+Navigate the project folder in command prompt and run the below command to build the image
+
+```javascript
+docker build . -t dockerngstart .
+```
+This command will look for a docker file in the current directory and create the image with tag dockerngstart. with -t command you can specify the tag for the image the default convention is DockerHubUsername/ImageName.
+
+### Running a container
+You can run the docker image using the below command
+```javascript
+docker run --name dockerngstart-container -it -p 8000:80 dockerngstart
+```
+A container may be running, but you may not be able to interact with it. To start the container in interactive mode, use the –i and –t options
+
+Navigate to your browser with http://localhost:8000
+
+### Review docker images
+Run docker images command to list all the docker images in your machine
+
+```javascript
+docker images
+```
+Remove docker image
+```javascript
+docker rmi <IMAGE ID>
+```
+### List Docker Containers
+To list all running Docker containers, enter the following into a terminal window
+```javascript
+docker ps
+```
+To list all containers, both running and stopped, add –a
+```javascript
+docker ps -a
+```
+
+### Start Docker Container
+The main command to launch or start a single or multiple stopped Docker containers is docker start:
+```javascript
+docker start [options] container_id 
+```
+To create a new container from an image and start it, use docker run
+```javascript
+docker run [options] image [command] [argument] 
+```
+### Stop Docker Container
+By default, you get a 10 second grace period. The stop command instructs the container to stop services after that period. Use the --time option to define a different grace period expressed in seconds
+
+```javascript
+docker stop [option] container_id
+
+docker stop --time=20 container_id
+```
+To immediately kill a docker container without waiting for the grace period to end use:
+```javascript
+docker kill [option] container_id
+```
+To stop all running containers, enter the following:
+```javascript
+docker stop $(docker ps –a –q)
+```
