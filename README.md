@@ -1322,3 +1322,36 @@ Or we can use <ng-container> without adding any extra element to the DOM at runt
 </ng-container>	
 ```
 ### ng-content
+ng-content is used to project content into Angular components. 
+You use the <ng-content></ng-content> tag as a placeholder for that dynamic content, then when the template is parsed Angular will replace that placeholder tag with your content.
+```javascript
+src/app/my-card/my-card.component.html
+
+<div class="card">  
+    <div class="card-header">  
+        <ng-content select=".header"></ng-content>  
+    </div>  
+    <div class="card-body">  
+        <ng-content select=".content"></ng-content>  
+    </div>  
+    <div class="card-footer">  
+        <ng-content select=".footer"></ng-content>  
+    </div>  
+</div>  	
+```
+Here, we will use the dynamic data and call our component like this:
+```javascript
+src/app/app.component.html
+
+<my-card>  
+  <ng-container class="header">  
+     Example of ng-container Select by Class using Angular  
+  </ng-container>  
+  <ng-container class="content">  
+     Here, we will learn about ng-content using angular. We will also learn the use of ng-content in angular. This example is used to display ng-content select by class using Angular.   
+  </ng-container>  
+  <ng-container class="footer">  
+     This example is from Javatpoint.com  
+  </ng-container>  
+</my-card>  	
+```
