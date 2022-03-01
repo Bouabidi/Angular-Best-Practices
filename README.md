@@ -1280,7 +1280,7 @@ To stop all running containers, enter the following:
 docker stop $(docker ps –a –q)
 ```
 ## Difference between ng-template, ng-container and ng-content
-### <ng-template></ng-template>
+### ng-template
 These template elements only work in the presence of structural directives, which help us to define a template that doesn’t render anything by itself, but conditionally renders them to the DOM. It helps us create dynamic templates that can be customized and configured.
 ```javascript
 <div> 
@@ -1293,7 +1293,7 @@ These template elements only work in the presence of structural directives, whic
 <ng-template #showNgTemplateContent> Should be displayed
 </ng-template>
 ```
-### <ng-container>
+### ng-container
 
 ng-container is an extremely simple directive that allows you to group elements in a template that doesn’t interfere with styles or layout because Angular doesn’t put it in the DOM
 This is helpful if you don’t want any extra div on DOM, you can simply use
@@ -1321,4 +1321,4 @@ Or we can use <ng-container> without adding any extra element to the DOM at runt
   </div>
 </ng-container>	
 ```
-### <ng-content></ng-content>
+### ng-content
