@@ -1279,3 +1279,46 @@ To stop all running containers, enter the following:
 ```javascript
 docker stop $(docker ps –a –q)
 ```
+## Difference between ng-template, ng-container and ng-content
+### <ng-template></ng-template>
+These template elements only work in the presence of structural directives, which help us to define a template that doesn’t render anything by itself, but conditionally renders them to the DOM. It helps us create dynamic templates that can be customized and configured.
+```javascript
+<div> 
+   Ng-template Content 
+   <div *ngIf=”false else showNgTemplateContent”> 
+      Shouldn't be displayed 
+   </div>
+</div>
+ 
+<ng-template #showNgTemplateContent> Should be displayed
+</ng-template>
+```
+### <ng-container>
+
+ng-container is an extremely simple directive that allows you to group elements in a template that doesn’t interfere with styles or layout because Angular doesn’t put it in the DOM
+This is helpful if you don’t want any extra div on DOM, you can simply use
+ng-container. For eg: If there are two structural directives are being called on one div as below:
+```javascript
+<div *ngIf="details" *ngFor="let info of details">
+  {{ info.content }}
+</div>
+Attempting to compile this code will result in the following error:
+Can't have multiple template bindings on one element. Use only one attribute prefixed with *
+```
+One workaround would be to separate the bindings as below:
+```javascript
+<div *ngIf="details">
+  <div *ngFor="let info of details">
+    {{ info.content }}
+  </div>
+</div>
+```
+Or we can use <ng-container> without adding any extra element to the DOM at runtime:
+```javascript
+<ng-container *ngIf="details">
+  <div *ngFor="let info of details">
+    {{ info.content }}
+  </div>
+</ng-container>	
+```
+### <ng-content></ng-content>
